@@ -203,12 +203,12 @@ if cc.has_function('open_memstream')
 endif
 
 warn_c_args = []
-foreach a : ['-Wall', '-Wextra', '-Wsign-compare', 
+foreach a : ['-Wall', '-Wextra', '-Wsign-compare', '-Werror=undef',
              '-Werror-implicit-function-declaration', '-Wpointer-arith',
              '-Wwrite-strings', '-Wstrict-prototypes', '-Wmissing-prototypes',
              '-Wmissing-declarations', '-Wnested-externs', '-Wpacked',
-             '-Wswitch-enum', '-Wmissing-format-attribute', 
-             '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow', 
+             '-Wswitch-enum', '-Wmissing-format-attribute',
+             '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow',
              '-Wdeclaration-after-statement', '-Wold-style-definition']
   if cc.has_argument(a)
     warn_c_args += a
@@ -216,7 +216,7 @@ foreach a : ['-Wall', '-Wextra', '-Wsign-compare',
 endforeach
 # GCC will never error for -Wno-*, so check for -W* then add -Wno-* to the list
 # of options
-foreach a : ['unused-parameter', 'attributes', 'long-long', 
+foreach a : ['unused-parameter', 'attributes', 'long-long',
              'missing-field-initializers']
   if cc.has_argument('-W@0@'.format(a))
     warn_c_args += '-Wno-@0@'.format(a)
@@ -251,28 +251,22 @@ if cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));'
   config.set10('HAVE_VISIBILITY', true)
 endif
 
-foreach t : [[with_intel, 'INTEL'], [with_vmwgfx, 'VMWGFX'],
-             [with_nouveau, 'NOUVEAU'], [with_omap, 'OMAP'],
-             [with_exynos, 'EXYNOS'], [with_freedreno, 'FREEDRENO'],
-             [with_tegra, 'TEGRA'], [with_vc4, 'VC4'],
-             [with_etnaviv, 'ETNAVIV']]
-  if t[0]
-    config.set10('HAVE_@0@'.format(t[1]), true)
-  endif
+foreach t : [
+             [with_exynos, 'EXYNOS'],
+             [with_freedreno_kgsl, 'FREEDRENO_KGSL'],
+             [with_intel, 'INTEL'],
+             [with_nouveau, 'NOUVEAU'],
+             [with_radeon, 'RADEON'],
+             [with_vc4, 'VC4'],
+             [with_vmwgfx, 'VMWGFX'],
+             [dep_cairo.found(), 'CAIRO'],
+             [dep_valgrind.found(), 'VALGRIND'],
+            ]
+  config.set10('HAVE_@0@'.format(t[1]), t[0])
 endforeach
-if with_freedreno_kgsl
-  if not with_freedreno
-    error('cannot enable freedreno-kgsl without freedreno support')
-  endif
-  config.set10('HAVE_FREEDRENO_KGSL', true)
+if with_freedreno_kgsl and not with_freedreno
+  error('cannot enable freedreno-kgsl without freedreno support')
 endif
-if dep_cairo.found()
-  config.set10('HAVE_CAIRO', true)
-endif
-if dep_valgrind.found()
-  config.set10('HAVE_VALGRIND', true)
-endif
-
 config.set10('_GNU_SOURCE', true)
 config_file = configure_file(
   configuration : config,
@@ -326,7 +320,7 @@ pkg.generate(
   version : meson.project_version(),
   description : 'Userspace interface to kernel DRM services',
 )
- 
+
 if with_libkms
   subdir('libkms')
 endif
