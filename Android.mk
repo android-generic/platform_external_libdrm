@@ -32,7 +32,7 @@ LIBDRM_TOP := $(LOCAL_PATH)
 
 include $(CLEAR_VARS)
 
-# Import variables LIBDRM_{,H_,INCLUDE_H_,INCLUDE_VMWGFX_H_}FILES
+# Import variables LIBDRM_{,H,INCLUDE_H,INCLUDE_ANDROID_H,INCLUDE_VMWGFX_H}_FILES
 include $(LOCAL_PATH)/Makefile.sources
 
 #static library for the device (recovery)
@@ -76,7 +76,8 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_SRC_FILES := $(LIBDRM_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
 	$(LOCAL_PATH) \
-	$(LOCAL_PATH)/include/drm
+	$(LOCAL_PATH)/include/drm \
+	$(LOCAL_PATH)/android
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/include/drm
@@ -92,6 +93,9 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_SRC_FILES := $(LIBDRM_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
         $(LOCAL_PATH)/include/drm
+
+LOCAL_SHARED_LIBRARIES := \
+	libcutils
 
 LOCAL_C_INCLUDES := \
         $(LOCAL_PATH)/include/drm
