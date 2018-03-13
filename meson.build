@@ -21,7 +21,7 @@
 project(
   'libdrm',
   ['c'],
-  version : '2.4.90',
+  version : '2.4.91',
   license : 'MIT',
   meson_version : '>= 0.43',
   default_options : ['buildtype=debugoptimized', 'c_std=gnu99'],
@@ -48,6 +48,7 @@ cc = meson.get_compiler('c')
 intel_atomics = false
 lib_atomics = false
 
+dep_atomic_ops = dependency('atomic_ops', required : false)
 if cc.compiles('''
     int atomic_add(int *i) { return __sync_add_and_fetch (i, 1); }
     int atomic_cmpxchg(int *i, int j, int k) { return __sync_val_compare_and_swap (i, j, k); }
@@ -55,7 +56,8 @@ if cc.compiles('''
     name : 'Intel Atomics')
   intel_atomics = true
   with_atomics = true
-elif cc.has_header('atomic_ops.h')
+  dep_atomic_ops = []
+elif dep_atomic_ops.found()
   lib_atomics = true
   with_atomics = true
 elif cc.has_function('atomic_cas_uint')
@@ -332,6 +334,9 @@ pkg.generate(
   description : 'Userspace interface to kernel DRM services',
 )
 
+env_test = environment()
+env_test.set('NM', find_program('nm').path())
+
 if with_libkms
   subdir('libkms')
 endif
@@ -370,3 +375,20 @@ if with_man_pages
 endif
 subdir('data')
 subdir('tests')
+
+message('')
+message('@0@ will be compiled with:'.format(meson.project_name()))
+message('')
+message('  libkms         @0@'.format(with_libkms))
+message('  Intel API      @0@'.format(with_intel))
+message('  vmwgfx API     @0@'.format(with_vmwgfx))
+message('  Radeon API     @0@'.format(with_radeon))
+message('  AMDGPU API     @0@'.format(with_amdgpu))
+message('  Nouveau API    @0@'.format(with_nouveau))
+message('  OMAP API       @0@'.format(with_omap))
+message('  EXYNOS API     @0@'.format(with_exynos))
+message('  Freedreno API  @0@ (kgsl: @1@)'.format(with_freedreno, with_freedreno_kgsl))
+message('  Tegra API      @0@'.format(with_tegra))
+message('  VC4 API        @0@'.format(with_vc4))
+message('  Etnaviv API    @0@'.format(with_etnaviv))
+message('')
