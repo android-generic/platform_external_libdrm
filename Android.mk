@@ -25,6 +25,7 @@
 # libdrm: for vendors. installed to /vendor/lib. libdrm_<vendor> uses this.
 # libdrm_platform: for platform modules (such as libminui). installed to /system/lib
 
+ifeq ($(LIBDRM_VER),intel)
 LIBDRM_COMMON_MK := $(call my-dir)/Android.common.mk
 
 LOCAL_PATH := $(call my-dir)
@@ -102,7 +103,19 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_C_INCLUDES := \
         $(LOCAL_PATH)/include/drm
 
+LOCAL_COPY_HEADERS :=            \
+       xf86drm.h                \
+       include/drm/drm_fourcc.h \
+       include/drm/drm.h        \
+       include/drm/drm_mode.h   \
+       include/drm/drm_sarea.h  \
+       include/drm/i915_drm.h   \
+       intel/intel_bufmgr.h     \
+
+LOCAL_COPY_HEADERS_TO := libdrm
+
 include $(LIBDRM_COMMON_MK)
 include $(BUILD_SHARED_LIBRARY)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
+endif
