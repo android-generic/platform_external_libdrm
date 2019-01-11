@@ -63,4 +63,5 @@ cc_library {
         "-Wno-sign-compare",
         "-Wno-tautological-compare",
     ],
+    shared_libs: ["liblog"],
 }
