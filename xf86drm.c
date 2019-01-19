@@ -69,6 +69,10 @@
 
 #include "util_math.h"
 
+#ifdef __ANDROID__
+#include <log/log.h>
+#endif
+
 #ifdef __OpenBSD__
 #define DRM_PRIMARY_MINOR_NAME  "drm"
 #define DRM_CONTROL_MINOR_NAME  "drmC"
@@ -138,16 +142,22 @@ drm_public void drmSetServerInfo(drmServerInfoPtr info)
 static int DRM_PRINTFLIKE(1, 0)
 drmDebugPrint(const char *format, va_list ap)
 {
+#ifdef __ANDROID__
+    return __android_log_vprint(ANDROID_LOG_DEBUG, "libdrm", format, ap);
+#else
     return vfprintf(stderr, format, ap);
+#endif
 }
 
 drm_public void
 drmMsg(const char *format, ...)
 {
     va_list ap;
+#ifndef __ANDROID__
     const char *env;
     if (((env = getenv("LIBGL_DEBUG")) && strstr(env, "verbose")) ||
         (drm_server_info && drm_server_info->debug_print))
+#endif
     {
         va_start(ap, format);
         if (drm_server_info) {
@@ -777,6 +787,48 @@ drm_public int drmOpenControl(int minor)
 drm_public int drmOpenRender(int minor)
 {
     return drmOpenMinor(minor, 0, DRM_NODE_RENDER);
+}
+
+/**
+ * Open the DRM device with specified type of specified framebuffer.
+ *
+ * Looks up the associated DRM device with specified type of the
+ * specified framebuffer and opens it.
+ *
+ * \param fb the index of framebuffer.
+ * \param type the device node type to open, PRIMARY, CONTROL or RENDER
+ *
+ * \return a file descriptor on success, or a negative value on error.
+ *
+ */
+drm_public int drmOpenByFB(int fb, int type)
+{
+#ifdef __linux__
+    DIR *sysdir;
+    struct dirent *ent;
+    char buf[64];
+    const char *name = drmGetMinorName(type);
+    int fd = -1, len = strlen(name);
+
+    snprintf(buf, sizeof(buf), "/sys/class/graphics/fb%d/device/drm", fb);
+    sysdir = opendir(buf);
+    if (!sysdir)
+        return -errno;
+
+    while ((ent = readdir(sysdir))) {
+        if (!strncmp(ent->d_name, name, len)) {
+            snprintf(buf, sizeof(buf), "%s/%s", DRM_DIR_NAME, ent->d_name);
+            fd = open(buf, O_RDWR | O_CLOEXEC, 0);
+            break;
+        }
+    }
+
+    closedir(sysdir);
+    return fd;
+#else
+#warning "Missing implementation of drmOpenByFB"
+    return -EINVAL;
+#endif
 }
 
 /**
