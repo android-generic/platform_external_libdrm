@@ -25,6 +25,11 @@
 # libdrm: for vendors. installed to /vendor/lib. libdrm_<vendor> uses this.
 # libdrm_platform: for platform modules (such as libminui). installed to /system/lib
 
+LIBDRM_ANDROID_MAJOR_VERSION := $(word 1, $(subst ., , $(PLATFORM_VERSION)))
+ifneq ($(filter 2 4, $(LIBDRM_ANDROID_MAJOR_VERSION)),)
+$(error "Android 4.4 and earlier not supported")
+endif
+
 LIBDRM_COMMON_MK := $(call my-dir)/Android.common.mk
 
 LOCAL_PATH := $(call my-dir)
