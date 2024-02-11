@@ -45,6 +45,7 @@ cc_defaults {
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
         "-Wno-missing-field-initializers",
+        "-Wno-unused-function",
     ],
     export_include_dirs: ["."],
 }
