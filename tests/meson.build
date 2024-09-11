@@ -21,10 +21,14 @@
 inc_tests = include_directories('.')
 
 subdir('util')
+subdir('kms')
 subdir('modeprint')
 subdir('proptest')
 subdir('modetest')
 subdir('vbltest')
+if with_libkms
+  subdir('kmstest')
+endif
 if with_radeon
   subdir('radeon')
 endif
