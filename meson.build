@@ -26,7 +26,7 @@
 project(
   'libdrm',
   ['c'],
-  version : '2.4.122',
+  version : '2.4.123',
   license : 'MIT',
   meson_version : '>= 0.59',
   default_options : ['buildtype=debugoptimized', 'c_std=c11'],
@@ -250,6 +250,10 @@ config.set10('_GNU_SOURCE', true)
 
 if target_machine.endian() == 'big'
   config.set('HAVE_BIG_ENDIAN', 1)
+endif
+
+if android
+  config.set('BIONIC_IOCTL_NO_SIGNEDNESS_OVERLOAD', 1)
 endif
 
 config_file = configure_file(
