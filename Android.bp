@@ -83,7 +83,7 @@ genrule {
     out: ["generated_static_table_fourcc.h"],
     srcs: ["include/drm/drm_fourcc.h"],
     tool_files: ["gen_table_fourcc.py"],
-    cmd: "python3 $(location gen_table_fourcc.py) $(location include/drm/drm_fourcc.h) $(out)",
+    cmd: "python3 $(location gen_table_fourcc.py) $(in) $(out)",
 }
 
 // Library for the device
@@ -106,10 +106,7 @@ cc_library {
         "generated_static_table_fourcc_h",
     ],
 
-    export_include_dirs: [
-        "include/drm",
-        "android",
-    ],
+    export_include_dirs: ["include/drm", "android"],
 
     cflags: [
         "-Wno-enum-conversion",
